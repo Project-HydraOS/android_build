@@ -1,4 +1,13 @@
 # Put some miscellaneous rules here
+#
+# Build system colors
+#
+# PFX: Prefix "target C++:" in yellow
+# INS: Module "Install:" output color (cyan for ics)
+
+ifneq ($(BUILD_WITH_COLORS),0)
+    include $(TOP_DIR)build/core/colors.mk
+endif
 
 # HACK: clear LOCAL_PATH from including last build target before calling
 # intermedites-dir-for
@@ -3171,9 +3180,31 @@ $(INTERNAL_OTA_PACKAGE_TARGET): $(BUILT_TARGET_FILES_PACKAGE) \
 	   $(if $(OEM_OTA_CONFIG), -o $(OEM_OTA_CONFIG)) \
 	   $(BUILT_TARGET_FILES_PACKAGE) $@
 
-.PHONY: otapackage
-otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
+HYDRA_TARGET_PACKAGE := $(PRODUCT_OUT)/$(HYDRA_VERSION).zip
 
+.PHONY: otapackage hydra
+otapackage: $(INTERNAL_OTA_PACKAGE_TARGET)
+poison: otapackage
+	$(hide) ln -f $(INTERNAL_OTA_PACKAGE_TARGET) $(HYDRA_TARGET_PACKAGE)
+	$(hide) $(MD5SUM) $(HYDRA_TARGET_PACKAGE) > $(HYDRA_TARGET_PACKAGE).md5sum
+	@echo -e ${CL_CYN}""${CL_CYN}
+	@echo -e ${CL_CYN}" ██░ ██▓██   ██▓▓█████▄  ██▀███   ▄▄▄          ▒█████    ██████  "${CL_CYN}
+	@echo -e ${CL_CYN}"▓██░ ██▒▒██  ██▒▒██▀ ██▌▓██ ▒ ██▒▒████▄       ▒██▒  ██▒▒██    ▒  "${CL_CYN}
+	@echo -e ${CL_CYN}"▒██▀▀██░ ▒██ ██░░██   █▌▓██ ░▄█ ▒▒██  ▀█▄     ▒██░  ██▒░ ▓██▄    "${CL_CYN}
+	@echo -e ${CL_CYN}"░▓█ ░██  ░ ▐██▓░░▓█▄   ▌▒██▀▀█▄  ░██▄▄▄▄██    ▒██   ██░  ▒   ██▒ "${CL_CYN}
+	@echo -e ${CL_CYN}"░▓█▒░██▓ ░ ██▒▓░░▒████▓ ░██▓ ▒██▒ ▓█   ▓██▒   ░ ████▓▒░▒██████▒▒ "${CL_CYN}
+	@echo -e ${CL_CYN}" ▒ ░░▒░▒  ██▒▒▒  ▒▒▓  ▒ ░ ▒▓ ░▒▓░ ▒▒   ▓▒█░   ░ ▒░▒░▒░ ▒ ▒▓▒ ▒ ░ "${CL_CYN}
+	@echo -e ${CL_CYN}" ▒ ░▒░ ░▓██ ░▒░  ░ ▒  ▒   ░▒ ░ ▒░  ▒   ▒▒ ░     ░ ▒ ▒░ ░ ░▒  ░ ░ "${CL_CYN}
+	@echo -e ${CL_CYN}" ░  ░░ ░▒ ▒ ░░   ░ ░  ░   ░░   ░   ░   ▒      ░ ░ ░ ▒  ░  ░  ░   "${CL_CYN}
+	@echo -e ${CL_CYN}" ░  ░  ░░ ░        ░       ░           ░  ░       ░ ░        ░   "${CL_CYN}
+	@echo -e ${CL_CYN}"        ░ ░      ░                                               "${CL_CYN}
+	@echo -e ${CL_CYN}"                   Scare From Hydra                              "${CL_CYN}
+	@echo -e ${CL_CYN}""${CL_CYN}
+	@echo -e ${CL_CYN}"========================-Package complete-======================="${CL_RST}
+	@echo -e ${CL_CYN}"File   : "${CL_MAG} $(PRODUCT_OUT)/$(HYDRA_VERSION).zip${CL_RST}
+	@echo -e ${CL_CYN}"MD5    : "${CL_MAG}" `cat $(HYDRA_TARGET_PACKAGE).md5sum | cut -d ' ' -f 1`"${CL_RST}
+	@echo -e ${CL_CYN}"Size   : "${CL_MAG}" `ls -lah $(HYDRA_TARGET_PACKAGE) | cut -d ' ' -f 5`"${CL_RST}
+	@echo -e ${CL_CYN}"================================================================="${CL_RST}
 endif    # build_ota_package
 
 # -----------------------------------------------------------------
